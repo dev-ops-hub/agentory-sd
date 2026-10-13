@@ -1,0 +1,37 @@
+{
+  "_comment": "Jira and Confluence export for sprintkit. Jira gets epics, stories, sprints, sub-tasks and comments. Confluence, when enabled, gets the planning documents, and every Jira web link to a document points at the Confluence page instead of the git host. The two sections are independent. When a section is off, missing or incomplete, sprintkit never connects for it but still writes planning/scratchpad/jira-export.md and jira-comments.md, and planning/scratchpad/jira-mapping.json. No credentials here: login goes through the Atlassian MCP (OAuth).",
+
+  "_site": "Your Atlassian Cloud address, e.g. your-company.atlassian.net. Shared by Jira and Confluence. Preflight stops if the connected site differs.",
+  "site": "https://techie-journey.atlassian.net/",
+
+  "jira": {
+    "_enabled": "true to export to Jira. false skips Jira entirely.",
+    "enabled": true,
+
+    "_project-prefix": "Must equal the Jira project key. Jira builds issue keys from it (TDA gives TDA-12). It cannot be changed here without changing the Jira project.",
+    "project-prefix": "TS",
+
+    "_board-id": "The board that holds the sprints. Find it in the board URL (.../boards/42).",
+    "board-id": 36,
+
+    "_levels": "What to export, in creation order: epics, stories, sprints, subtasks, comments. Remove any you do not want. comments posts the agents' recorded decisions, one comment per decision, append-only.",
+    "levels": ["epics", "stories", "sprints", "subtasks", "comments"]
+  },
+
+  "confluence": {
+    "_enabled": "true to publish the planning documents to Confluence. false (or deleting this section) skips Confluence; Jira links then point at the git host.",
+    "enabled": true,
+
+    "_space-key": "Key of an existing Confluence space (the short code in .../wiki/spaces/<KEY>/...). Preflight stops if it does not exist.",
+    "space-key": "TS",
+
+    "_parent-page": "Title of the page every document is created under. Created in the space if missing.",
+    "parent-page": "Trade Digital Assistant",
+
+    "_documents": "Which documents to publish: prd, constitution, sprint-plan, specs, sprint-graph, retros, ux, adr. Remove any you do not want. Markdown stays the source of truth; pages are overwritten on every run, so edit the markdown, not the page.",
+    "documents": ["prd", "constitution", "sprint-plan", "specs", "sprint-graph", "retros", "ux", "adr"],
+
+    "_link-from-jira": "true: Jira web links to a document use the Confluence page URL. false, or no page yet: they use the git host permalink.",
+    "link-from-jira": true
+  }
+}

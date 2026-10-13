@@ -1,0 +1,9 @@
+{
+  "_comment": "Git host for sprintkit skills that open, read, review or merge PRs/MRs (autopilot, loop, implement, review, sync, pipeline, retro). Delete this file to auto-detect the host from the origin remote. No credentials here: log in with the CLI (gh auth login or glab auth login).",
+
+  "_provider": "auto, github or gitlab. auto reads the origin remote: github.com is github, gitlab.com or a name containing gitlab is gitlab. A self-hosted server with an unrevealing name must be set explicitly.",
+  "provider": "auto",
+
+  "_host": "Optional. Bare hostname of a self-hosted server, e.g. gitlab.mycompany.com (no https://, no path; add :port if non-standard). Leave empty for github.com or gitlab.com. It must match the host of the origin remote.",
+  "host": ""
+}
