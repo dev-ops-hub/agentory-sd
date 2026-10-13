@@ -1,0 +1,28 @@
+# macOS Finder metadata
+.DS_Store
+
+# Claude Code agent worktrees (harness-managed isolated checkouts)
+.claude/worktrees/
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Python virtual environment
+backend/.venv/
+
+# Development database files (not the bind-mounted db/ directory at project root)
+backend/db/*.db
+
+# Node.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# IDE
+.idea/
+.vscode/
+
+# Environment files
+.env
+.env.local
