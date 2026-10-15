@@ -138,7 +138,7 @@ sprintkit-start → sprintkit-plan → sprintkit-design → sprintkit-graph
 | `product-auditor` | Adversarial audit of PRDs and sprint specs, with findings graded P0 to P3. | 8 |
 | `technical-product-manager` | Writes per-sprint specs and checks spec coverage against the PRD. | 5 |
 | `solution-architect` | System and cloud architecture across AWS, Azure and GCP, with diagrams, cost estimates and ADRs. | 3 |
-| `ux-designer` | Information architecture, flows, wireframes, components, design tokens and accessibility, written to `planning/ux/`. | 10 |
+| `ux-designer` | Information architecture, flows, wireframes, components, design tokens, accessibility, and Figma publishing for `planning/ux/`. | 11 |
 | `software-engineer` | Backend services, APIs, data access, application security and tests. | 24 |
 | `frontend-developer` | Next.js/React UI (Angular and React Native guidance also available), styling and accessibility. | 10 |
 | `devops-engineer` | CI/CD, infrastructure as code, containers and Kubernetes, cloud operations, observability and reliability. | 25 |
@@ -152,6 +152,7 @@ Counts include pointers to shared skills.
 - **Product and spec:** PRD, user stories, acceptance criteria and edge cases, JTBD, hypotheses, OKRs, personas, prioritisation, competitive and market analysis, instrumentation specs, spec tracing, audit reporting, and the speckit constitution, specify, analyze and checklist skills.
 - **Architecture and backend:** software architecture, distributed-systems patterns, API design, authentication and authorization, application security, integration patterns, database design, SQL optimisation, FastAPI, Python, TypeScript, clean code and refactoring.
 - **Frontend and design:** Next.js, Vercel React best practices, composition patterns, view transitions, React Native, Angular, web design guidelines, e2e browser testing, design tokens, components, aesthetics, design review, accessibility audit, prototyping and UX writing.
+- **UX designer skills:** `design-doctrine`, `ux-writing`, `data-dashboard`, `a11y-audit`, `designing-user-interfaces`, `design-review`, `apply-aesthetic`, `publish-to-figma`, `prototype`, `design-component` and `design-tokens`. These support the UX designer's work from design principles and accessible prototypes through review and publishing designs to Figma.
 - **DevOps and cloud:** CI/CD architecture, GitHub Actions, GitLab CI, supply-chain security, AWS, Azure, GCP, Docker, Kubernetes, infrastructure as code, networking, observability, SRE, infrastructure hardening, secrets and identity, and infrastructure troubleshooting.
 - **QA:** acceptance testing, agent regression evaluation, defect triage, exploratory testing, QA release assessment, regression testing, requirements-to-test analysis and traceability, test case design, test evidence and test strategy.
 - **Security:** security audit methodology, security findings reporting and secure engineering.
