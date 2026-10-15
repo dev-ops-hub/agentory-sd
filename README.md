@@ -4,6 +4,92 @@ Agentic Engineering to ship software based on SDD, TDD and Scrum.
 
 The repo is a library of Claude Code skills and sub-agents that take a product from an idea to merged, reviewed code: a PRD, a sprint plan, specs, design, implementation, a review board, and a retro. Claude Code loads everything under `.claude/` automatically for anyone working in this repo.
 
+## Getting started
+
+See `CLAUDE.md` at the repo root for the project constitution and sprintkit workflow.
+
+1. Install the required tools (below) and log in to your git host CLI.
+2. In Claude Code, run `/sprintkit-start` to begin a PRD, or `/sprintkit-pipeline` to run the whole flow.
+
+### Install the skills in another project
+
+**Supported coding agent: Claude Code** (CLI or IDE integration). These are
+Claude Code skills: they use its project-skill discovery and, depending on the
+skill, Claude-specific agent dispatch, user-question, and MCP tool conventions.
+Other coding agents may understand the `SKILL.md` format, but the sprintkit
+workflows are not verified there; using them elsewhere requires adapting those
+tool calls, sub-agent names, and repository paths to that agent.
+
+For a project-local install, copy only the skill directories you want into the
+target project's `.claude/skills/`. For example, from a checkout of this repo:
+
+```bash
+mkdir -p /path/to/your-project/.claude/skills
+cp -R /path/to/agentory-sd/.claude/skills/sprintkit-start \
+  /path/to/your-project/.claude/skills/
+cp -R /path/to/agentory-sd/.claude/skills/sprintkit-plan \
+  /path/to/your-project/.claude/skills/
+```
+
+Replace the paths with the locations on your machine. In Claude Code, invoke
+the copied skills by name, for example `/sprintkit-start` and
+`/sprintkit-plan`. Skills are available only in the project where they are
+installed.
+
+To install an individual skill for all your projects instead, copy its
+directory into `~/.claude/skills/`. Prefer project-local installation for
+sprintkit: it is built around that project's planning files, agents, and
+configuration, and its behavior should not accidentally depend on a different
+project's context.
+
+**For the complete sprintkit workflow**, copying only the skill directories is
+not enough. The skills refer to supporting files by their repository-relative
+paths. Copy or adapt the required `.claude/agents/` definitions and their skill
+libraries, `.claude/sprintkit/` reference documents, and any templates or hooks
+used by the stages you plan to run. Review the paths and project policies in
+those files against your target repository before using them. Keep existing
+`.claude/` files; merge the needed files rather than replacing the directory.
+
+The sprintkit skills expect the conventional planning layout:
+`planning/product-req-document(PRD).md` and `planning/sprint.md` for the
+default track, with optional per-sprint specs under `planning/specs/`. Start
+with `/sprintkit-start`, then `/sprintkit-plan`; use `/sprintkit-pipeline` to
+drive the stages end to end. The full workflow also needs `git`, an authenticated
+git-host CLI (`gh` or `glab`), and the supporting agents. Jira/Confluence
+publishing additionally requires an Atlassian MCP connection and a project
+configuration in `agent-config/jira_confluence.json`. See
+[Third-party tools to install](#third-party-tools-to-install) for optional
+scanners and other tools.
+
+### Use the skills
+
+Open the target project in Claude Code after installing the skills. Invoke a
+skill by its slash-command name; for example:
+
+```text
+/sprintkit-start
+/sprintkit-plan track:default specs:next
+/sprintkit-graph
+/sprintkit-loop sprint:1
+/sprintkit-pipeline
+```
+
+Use individual stages when you want to guide the workflow yourself. Use
+`/sprintkit-pipeline` to detect the project's current planning state and run
+the end-to-end flow. `/sprintkit-autopilot` is for scheduling and building
+unblocked sprints from an existing sprint plan. Before using a stage, check its
+skill description and arguments; some stages pause for decisions or approval.
+
+### Configure the skills
+
+Configuration is project-local. Create `agent-config/` in the target project
+and add only the files needed for the workflow. The repository's
+[`agent-config/git.json`](./agent-config/git.json) and
+[`agent-config/jira_confluence.json`](./agent-config/jira_confluence.json) are
+annotated examples, **not ready-to-use settings**: replace their example
+project, board, space, and site values with your own. Keys beginning with `_`
+are explanatory comments and are ignored by the skills.
+
 ## Layout
 
 | Path | Contents |
@@ -33,7 +119,7 @@ sprintkit-start → sprintkit-plan → sprintkit-design → sprintkit-graph
 | `sprintkit-design` | Produces UI and system design (`planning/ux/`, `planning/architecture/`) before build. |
 | `sprintkit-graph` | Draws the plan as a dependency graph and predicts how autopilot will schedule it. Read-only. |
 | `sprintkit-implement` | Implements a sprint by directing the software, frontend and devops engineer agents, and opens the PR. |
-| `sprintkit-review` | Six-member review board (test, security, architecture, scope, product, UX) that posts one PR verdict. |
+| `sprintkit-review` | Three-member review board (`test-engineer`, `security-auditor`, `product-manager`) that posts one PR verdict; the product manager covers architecture, scope, product intent and UX acceptance. |
 | `sprintkit-loop` | Implement → review → fix → re-review until approved or a human is needed (hard stop at 8 cycles). |
 | `sprintkit-autopilot` | Builds the whole PRD as a scheduler over the dependency graph, merging each PR itself. |
 | `sprintkit-pipeline` | Chains start, plan, graph, autopilot and retro end to end, resuming from whatever already exists. |
@@ -82,14 +168,14 @@ Details on individual skills:
 - `sprintkit-plan` converts a PRD into sprints with testable acceptance criteria and declares the dependencies between them, which decides how wide the build fans out.
 - `sprintkit-design` sits between plan and graph. It writes the `planning/ux/` screen and design docs plus `planning/architecture/design.md`, then records sprint `**Design:**` status lines.
 - `sprintkit-graph` also audits for cycles, phantom dependencies, file-scope collisions and accidental serialisation.
-- `sprintkit-review` checks sprint acceptance criteria, PRD intent, and test, security, architecture, product and UX acceptance, then posts the PR verdict.
+- `sprintkit-review` checks sprint acceptance criteria, PRD intent, and test, security and product acceptance (including architecture and UX), then posts the PR verdict.
 - `sprintkit-sync` treats board artifacts under `agent-docs/review-reports/` as first-class review evidence.
 - `sprintkit-jira` works through the Atlassian MCP when `agent-config/jira_confluence.json` is configured. It always writes `planning/scratchpad/jira-export.md`, the decision log and the ID mapping, and runs automatically at the `sprintkit-start` and `sprintkit-plan` gates.
 
 ### Recent changes
 
 - `sprintkit-design` is now the explicit stage between planning and graph/autopilot, so UI and system design are in place before build fan-out.
-- `sprintkit-review` now runs a multi-agent review board (test, security, architecture, product, UX) and posts one PR verdict.
+- `sprintkit-review` now runs a three-agent review board (test, security and product) and posts one PR verdict; the product manager owns the combined architecture, scope, product and UX acceptance assessment.
 - `sprintkit-loop` and `sprintkit-autopilot` now carry board artifact/report status through each review cycle.
 - `sprintkit-sync` now treats board artifacts under `agent-docs/review-reports/` as first-class review evidence.
 
@@ -149,25 +235,62 @@ These are what makes a skill an engineering artifact rather than a wish. `evals.
 
 The `evals/files/` fixtures are a condensed Kopi Uncle PRD and sprint plan, copied into the eval sandbox so the runs are self-contained. The sprint fixture marks Sprints 1–2 as DONE and Sprint 3 as NOT STARTED, which is what lets the "implement the current sprint" eval check whether the skill actually works out where it is instead of guessing.
 
-## Provenance and caveats
+#### Git host (`agent-config/git.json`)
 
-- Snapshot of the author's personal `~/.claude/skills/` as of **2026-08-26**, since diverged. It is not a live mirror.
-- **Renamed under a `sprintkit-` prefix**, and that is not cosmetic. A user-scoped skill shadows a project-scoped one of the same name, so while these carried their original names they were silently overridden on any machine that already had them in `~/.claude/skills/`, including the author's, which is where the repo's own fixes are supposed to take effect. Under a distinct prefix the repo's copies are the ones that run, and both sets can coexist. Attendees lifting these into their own projects can drop the prefix or keep it; keeping it is safer for exactly the same reason.
-- Eight skills from that set were left out as irrelevant to this project: `epic-planner`, `ideate`, `task-impl-pr`, `task-impl-pr-review-loop`, `pr-reviewer`, `codebase-auditor`, `scrum-task-adder`, `sprint-compactor`. Where the remaining skills referred to them, the routing advice was rewritten to describe the situation instead of naming a skill that isn't here.
-- Absolute `~/.claude/...` paths were rewritten repo-relative so the helper resolves from a clean clone.
-- The `sprintkit-plan` and `sprintkit-implement` evals were originally written against a private project and referenced it by absolute path. They have been re-domained onto Kopi Uncle with self-contained fixtures. Structure, assertions and intent are unchanged; only the subject matter differs.
-- No personal configuration is included. The author's global `CLAUDE.md` (language preferences, machine setup, install rules) stays out of this repo by design; these skills are the transferable part.
+This file is optional for host detection: without it, the skills detect GitHub
+or GitLab from the `origin` remote. Add it to select a provider explicitly,
+configure a self-hosted GitLab hostname, or enable Jira keys in branch and
+PR/MR naming:
 
-## Getting started
+```json
+{
+  "provider": "auto",
+  "host": ""
+}
+```
 
-See `CLAUDE.md` at the repo root for the project constitution and sprintkit workflow.
+Set `provider` to `github` or `gitlab` to override detection. For self-hosted
+GitLab, set `provider` to `gitlab` and `host` to the bare hostname (for example
+`gitlab.example.com`, without a scheme or path). Authenticate separately with
+`gh auth login` or `glab auth login`; do not put credentials in this file.
 
-1. Install the required tools (below) and log in to your git host CLI.
-2. In Claude Code, run `/sprintkit-start` to begin a PRD, or `/sprintkit-pipeline` to run the whole flow.
+#### Jira and Confluence (`agent-config/jira_confluence.json`)
 
-### Using the skills elsewhere
+This file has independent `jira` and `confluence` sections. Enable only the
+integrations you intend to use. For example:
 
-Copy any skill directory into `.claude/skills/` in your own project, or into `~/.claude/skills/` to have it everywhere. They assume `git` and the `gh` CLI, and the sprint skills assume a `planning/product-req-document(PRD).md` and `planning/sprint.md` in the conventional shape. Run `sprintkit-start` and `sprintkit-plan` first and you get that for free.
+```json
+{
+  "site": "https://your-company.atlassian.net/",
+  "jira": {
+    "enabled": true,
+    "project-prefix": "PROJ",
+    "board-id": 42,
+    "levels": ["epics", "stories", "sprints", "subtasks", "comments"]
+  },
+  "confluence": {
+    "enabled": true,
+    "space-key": "PROJ",
+    "parent-page": "Project Planning",
+    "documents": ["prd", "constitution", "sprint-plan", "specs", "sprint-graph", "retros", "ux", "architecture", "adr"],
+    "link-from-jira": true
+  }
+}
+```
+
+Set `jira.enabled` and `confluence.enabled` independently. Jira requires the
+Atlassian site URL and Jira project key (`project-prefix`); its board ID is
+needed to create sprints. Confluence requires the site URL, an existing space
+key, and the parent page title. `documents` selects which planning artifacts
+to publish. Optional `confluence.folders` can route document types such as
+`ux` and `architecture` into named Confluence folders. If an integration is
+disabled or incomplete, the skills skip that integration and still generate
+their local planning/export records.
+
+No Atlassian credentials belong in the JSON file. Connect and authenticate the
+Atlassian MCP in Claude Code; the skill checks that the connected site and
+configured Jira project or Confluence space match before publishing. It shows
+a dry run and waits for approval before making remote changes.
 
 ### Third-party tools to install
 

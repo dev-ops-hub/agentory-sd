@@ -1,6 +1,6 @@
 ---
 name: sprintkit-review
-description: Use when reviewing a sprint implementation PR/MR for acceptance and release readiness, or when re-reviewing fixes in later cycles. In Sprint Mode this dispatches a six-member specialist review board, each owning one perspective — test-engineer (testing), security-auditor (security), solution-architect (architecture), technical-product-manager (scope and acceptance-criteria fidelity), product-manager (product intent), and ux-designer (UX) — and produces one combined verdict. Also use for standalone PR/MR reviews when no sprint artifacts exist; standalone runs as a single strict reviewer against the PR description only, with no specialist board dispatched. Do not use for implementation work, sprint planning, or PRD authoring.
+description: Use when reviewing a sprint implementation PR/MR for acceptance and release readiness, or when re-reviewing fixes in later cycles. In Sprint Mode this dispatches a three-member specialist review board, each owning one perspective — test-engineer (testing), security-auditor (security), and product-manager (scope, acceptance-criteria fidelity, and product intent) — and produces one combined verdict. Also use for standalone PR/MR reviews when no sprint artifacts exist; standalone runs as a single strict reviewer against the PR description only, with no specialist board dispatched. Do not use for implementation work, sprint planning, or PRD authoring.
 ---
 
 # Sprint Reviewer
@@ -32,20 +32,17 @@ Resolve the host once, before any PR/MR work, per [.claude/sprintkit/GIT-HOST.md
 
 ## Sprint Review Board (Sprint Mode)
 
-Sprint Mode uses a six-member review board that audits the sprint's implementation artifacts before merge approval.
+Sprint Mode uses a three-member review board that audits the sprint's implementation artifacts before merge approval.
 
 Board members:
 - `test-engineer`
 - `security-auditor`
-- `solution-architect`
-- `technical-product-manager`
 - `product-manager`
-- `ux-designer`
 
 Role responsibilities:
 - `test-engineer`: own the test readiness assessment; produce end-to-end, functional, and non-functional test-case coverage in the review report; validate test execution evidence; update user-story review comments with explicit author attribution; publish the testing report to Confluence when configured.
 - `security-auditor`: audit source code, infrastructure-as-code, frontend scripts, and dependency/security signals; publish security decisions and status comments with explicit author attribution; publish the security audit report to Confluence when configured.
-- `solution-architect`, `technical-product-manager`, `product-manager`, `ux-designer`: review deliverables for acceptance from architecture, scope, product intent, and UX fidelity perspectives; jointly produce the acceptance report and publish it to Confluence when configured.
+- `product-manager`: review deliverables for acceptance from architecture fit, scope and acceptance-criteria fidelity, product intent, and UX conformance perspectives (the full remit previously split across `solution-architect`, `technical-product-manager`, and `ux-designer`); produce the acceptance report and publish it to Confluence when configured.
 
 Clarification protocol:
 - Any board member may request clarifications from `frontend-developer`, `devops-engineer`, or `software-engineer`.
@@ -305,9 +302,9 @@ Before writing the final review report, run the board pass in parallel where pos
    - Security findings across source, IaC, frontend scripts, and dependencies
    - Severity grading (`Critical`/`High`/`Medium`/`Low`) and exploitability rationale
    - User-story status/decision comments attributed to `security-auditor`
-- `solution-architect`, `technical-product-manager`, `product-manager`, `ux-designer` output:
-   - Acceptance findings per role and a consolidated accept/rework recommendation
-   - Explicit notes for architecture fit, requirement fidelity, product intent, and UX/design conformance
+- `product-manager` output:
+   - Acceptance findings and an accept/rework recommendation
+   - Explicit notes for architecture fit, requirement fidelity, product intent, and UX/design conformance (the role covers all four; it does not split them across separate reviewers)
 
 ### Artifact and publishing contract
 
@@ -436,20 +433,14 @@ Note any cases where the implementation diverges from the PRD intent — not jus
 
 Also flag any P0 requirements from the PRD that appear unaddressed by this sprint and haven't been deferred intentionally.
 
-### Multi-Agent Acceptance Board
+### Acceptance Assessment
 
-Summarize acceptance decisions from:
-- `solution-architect`
-- `technical-product-manager`
-- `product-manager`
-- `ux-designer`
+Summarize the acceptance decision from `product-manager`, covering architecture fit, scope/requirement fidelity, product intent, and UX conformance in one pass.
 
-For each role, state:
+State:
 - Acceptance verdict (Accept / Accept with conditions / Rework required)
 - Blocking concerns (if any)
 - Non-blocking concerns (if any)
-
-Then provide a consolidated board verdict and explain any disagreement between roles. Any unresolved role disagreement tied to a sprint acceptance criterion is a Blocker.
 
 ### Clarifications Log
 
@@ -511,7 +502,9 @@ GitHub blocks `gh pr review --approve` when the reviewer is the PR author (GitLa
 Only follow this fallback when the verdict is genuinely **"Ready to merge"** (no Blockers, no Non-blockers, no Nice-to-haves). If the review has any findings, use `--comment` or `--request-changes` as normal and **do not** emit the marker described below.
 
 1. Attempt the approval first (`gh pr review <number> --approve --body "<body>"`, or `glab mr approve <number>`).
-2. If the command exits non-zero with an error matching `can not approve your own pull request` (GitHub) or a message about approving your own or the author's merge request (GitLab), case-insensitive, re-post the **same review body** as a comment (on GitLab, a note), with one change: append, on its own line at the very end of the body (after the recommended merge commit message), the literal marker:
+2. If the command exits non-zero with an error matching `can not approve your own pull request` (GitHub) or a message about approving your own or the author's merge request (GitLab), case-insensitive, re-post the **same review body** as a **formal review**, not a plain issue comment: `gh pr review <number> --comment --body "<body>"` (GitLab: a note via `glab mr note create`), with one change: append, on its own line at the very end of the body (after the recommended merge commit message), the literal marker:
+
+   **Do not use `gh pr comment`** (a plain issue comment) for this. The orchestrators (`sprintkit-loop`, `sprintkit-autopilot`) check for the marker via `gh pr view <number> --json reviews` — the formal-reviews list, not the issue-comments list. A marker posted with `gh pr comment` is invisible to that check and the orchestrator will treat the PR as still needing another cycle even though you intended it as approved.
 
    ```
    <!-- sprintkit-review-verdict: READY_TO_MERGE; reason: self-approval-blocked -->
@@ -526,7 +519,7 @@ This marker is a contract between `sprintkit-review` and the orchestrators (`spr
 
 **Never emit this marker** on `--request-changes`, on mixed reviews, or as a "soft approval" signal for reviews that have any findings. The marker means *"I would have clicked Approve and the host stopped me."* Misusing it re-introduces the false-approval class of bug the orchestrator guardrail was built to prevent.
 
-Re-reviews (Step 5) follow the same rule: when a re-review verdict is "Ready to merge" and `--approve` fails with the self-approval error, fall back to a comment (GitLab: a note) with the marker appended.
+Re-reviews (Step 5) follow the same rule: when a re-review verdict is "Ready to merge" and `--approve` fails with the self-approval error, fall back to a **formal review** (`gh pr review <number> --comment --body "<body>"`; GitLab: a note) with the marker appended — not a plain `gh pr comment`, per the note above.
 
 For issues tied to a specific file and line, add inline comments to the diff. On GitHub use `gh api`; on GitLab post a normal note that names `file:line` instead (inline positions need diff SHAs). This is optional but high-value for specific code-level issues (logic errors, security issues, test gaps at a specific function). Use it when pointing to a line is clearer than prose.
 

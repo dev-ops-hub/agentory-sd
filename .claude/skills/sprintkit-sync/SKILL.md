@@ -267,6 +267,8 @@ After updating the backlog, assess whether it's time to act on accumulated items
 
 **Acceptance criteria checkboxes:** Update based on reviewer notes from Step 3.
 
+**Story Points:** For each story in the sprint being marked `[DONE]`, add a `**Story Points:** <N>` line directly under the story's heading (after the epic/persona italic line) sourced from `planning/scratchpad/jira-comments.md`'s estimation entry for that sprint — `sprintkit-implement` is required to log one there, scale `1, 3, 5, 7, 13`, before coding started. This is the local record of truth; it must land in the Sprint file whether or not Jira is configured. If no estimate can be found for a story, flag it as a gap in the Step 6 report instead of inventing a number.
+
 **Do not advance any other sprint.** Mark the completed sprint `[DONE]` and stop there. Deciding what runs next belongs to `sprintkit-autopilot`, which schedules from the dependency graph and may have several sprints in flight at once. A sprint marked `[IN PROGRESS]` without a runner behind it is read as "already claimed" and will never be dispatched — that is how a run silently deadlocks. Leave every other sprint's status exactly as you found it, including any that are currently `[IN PROGRESS]` in another worktree.
 
 **Followup sprint insertion:** If Step 3b produced a followup sub-sprint, insert it into the file immediately after the completed sprint, marked `[NOT STARTED]`. Adjust day ranges on all subsequent sprints to accommodate the new sprint. It must carry a `**Dependencies:**` line — normally the parent sprint (`**Dependencies:** Sprint N`) — so the scheduler can place it, plus a `**Touches:**` line if the plan uses them. Position in the file does not determine when it runs; dependencies do.
