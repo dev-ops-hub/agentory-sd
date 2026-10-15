@@ -90,6 +90,10 @@ annotated examples, **not ready-to-use settings**: replace their example
 project, board, space, and site values with your own. Keys beginning with `_`
 are explanatory comments and are ignored by the skills.
 
+### Workflow
+<img width="1006" height="503" alt="image" src="https://github.com/user-attachments/assets/7ea7f220-03a9-461d-80e8-b0e64d5108ec" />
+
+
 ## Layout
 
 | Path | Contents |
