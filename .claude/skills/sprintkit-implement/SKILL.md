@@ -108,7 +108,7 @@ If the sprint has a `**Spec:**` line, read that spec too: it is the detailed con
 
 Before implementation starts, run this preflight for the target stories:
 
-1. **Story point estimation (required):** estimate each story's points before writing code. If points are missing in the sprint artifacts, add the estimate to the implementation notes and `planning/scratchpad/jira-comments.md` with author attribution. After estimation, if Jira is configured, invoke `sprintkit-jira` with `scope:points` to push the estimates to the corresponding Jira issues. The Jira story-point field is set via `editJiraIssue` with `additional_fields: {"Story Points": <N>}`.
+1. **Story point estimation (required):** estimate each story's points before writing code, using only this scale: `1, 3, 5, 7, 13` (1 = least complicated, 13 = most). Never use a value outside this scale (no 2, 8, 20, etc.). If points are missing in the sprint artifacts, add the estimate to the implementation notes and `planning/scratchpad/jira-comments.md` with author attribution — this is the **local record of truth** for story points and must be written regardless of whether Jira is configured; `sprintkit-sync` reads it back to put a `**Story Points:**` line on each story in the Sprint file once the sprint is marked `[DONE]`. After estimation, if Jira is configured, additionally invoke `sprintkit-jira` with `scope:points` to push the estimates to the corresponding Jira issues. The Jira story-point field is set via `editJiraIssue` with `additional_fields: {"Story Points": <N>}`.
 2. **Design source alignment:** follow published design artifacts as the source of truth:
    - Confluence pages when configured and available
    - Otherwise the repository design artifacts under `agent-docs/` and `planning/ux/`
@@ -228,6 +228,23 @@ If Jira is configured and approved, publish test evidence comments through `spri
 Run the formatter before committing. Don't commit with failing tests.
 
 **Branch off the resolved base, not whatever happens to be checked out.** The current working tree may be sitting on a stale branch from a previous sprint. Before committing, make the feature branch explicitly from the up-to-date base:
+
+**Warn and get confirmation before switching branches.** Checking out `<base>` moves the working tree off the branch the user is on and can carry, conflict with, or strand uncommitted work. Before running any `git checkout`:
+
+1. Gather the facts: `git branch --show-current`, `git status --short`, and the commits on the current branch not on `<base>` (`git log --oneline <base>..HEAD`).
+2. Show a warning in this form, filled in:
+
+   ```
+   ⚠ About to switch branches
+     Current branch : <current>   (<n> uncommitted/untracked files, <m> commits not on <base>)
+     Will check out : <base>, pull, then create sprint-<N>-<short-slug>
+     Risk           : uncommitted changes may block the checkout or be left behind on <current>.
+   ```
+
+   If the working tree is dirty, list the files and say plainly that they will not be part of the new branch unless the user decides how to handle them (commit, stash, or carry over).
+3. Ask the user to confirm with `AskUserQuestion` (options: proceed, stash first then proceed, stay on the current branch and commit here, cancel). Do not run `git checkout` until they answer. If they cancel, stop and report where the work is.
+
+Skip the prompt only when already on `sprint-<N>-<short-slug>` (nothing to switch) or when running unattended under `sprintkit-autopilot`/`sprintkit-loop`, where the runner owns an isolated worktree. In that case still print the warning block to the log.
 
 ```bash
 git fetch origin

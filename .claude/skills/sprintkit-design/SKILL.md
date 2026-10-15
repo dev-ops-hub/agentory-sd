@@ -176,7 +176,7 @@ Each agent returns a summary plus Gaps tagged `[PM]` or `[USER]`. Put every Gap 
 
 One line per sprint designed: screens written, decisions added, Gaps open. One line for the architecture run, if it ran: file written, ADR count, Gaps open. Then the owner's next step: read `planning/ux/README.md` in its reading order and set each `Proposed` UXD to `Accepted` or `Rejected`; read `planning/architecture/design.md` section 7 and do the same for its ADRs. **Decisions stay `Proposed` until the owner rules — you never accept one on the owner's behalf**, and neither does an agent.
 
-Tell the user that `planning/ux/**` publishes to Confluence through `sprintkit-jira` (`scope:docs`) when Jira is configured, since the plumbing already treats `ux` as a document type. `planning/architecture/design.md` has **no matching document type yet** — `sprintkit-jira`'s `adr` type publishes individual Nygard-shaped files under `docs/adr/` (the convention Sprint 1's spec already uses), which is a different shape from the full system-design template this file is. Say so rather than claiming it publishes; a new `architecture` document type is a change to `sprintkit-jira`, out of scope here unless the user asks for it.
+Tell the user that `planning/ux/**` publishes to Confluence through `sprintkit-jira` (`scope:docs`) when Confluence is configured, into the "User Interface Design" folder (`confluence.folders.ux`), and that `planning/architecture/design.md` publishes through the same scope as the `architecture` document type into the "Architecture Design" folder (`confluence.folders.architecture`). `sprintkit-jira`'s separate `adr` type still publishes individual Nygard-shaped files under `docs/adr/`; it is not the system-design file.
 
 ## Where this sits
 
